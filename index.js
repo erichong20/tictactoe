@@ -67,7 +67,7 @@ const GameController = (() => {
     let player2;
 
     const newRound = () => {
-        player1 = playerFactory("Eric","X");
+        player1 = playerFactory("Player1","X");
         player2 = playerFactory("Player2","O");
         playerTurn = player1;
 

@@ -1,5 +1,7 @@
 const GameBoard = (() => {
     let htmlBoard = document.querySelector(".board");
+    let handleClick;
+    let boardFrozen = false;
 
     //array of rows
     let board = [["","",""],["","",""],["","",""]];
@@ -11,9 +13,11 @@ const GameBoard = (() => {
                 square.innerHTML = board[row][col];
                 square.classList.add("grid-square");
 
-                square.addEventListener("click", function(){
+                handleClick = function(){
                     GameController.onClick(row,col)
-                })
+                }
+
+                square.addEventListener("click", handleClick)
 
                 htmlBoard.appendChild(square);
             }
@@ -26,13 +30,22 @@ const GameBoard = (() => {
 
     const clearBoard = () => {
         board = [["","",""],["","",""],["","",""]];
+        boardFrozen = false;
     }
 
     const setBoard = (row,col,mark) => {
         board[row][col] = mark;
     }
 
-    return {render, getBoard, clearBoard, setBoard}
+    const freezeBoard = () => {
+        boardFrozen = true;
+    }
+
+    const isFrozen = () => {
+        return boardFrozen;
+    }
+
+    return {render, getBoard, clearBoard, setBoard, freezeBoard, isFrozen}
 })();
 
 const playerFactory = (name, mark) => {
@@ -55,7 +68,7 @@ const GameController = (() => {
 
     const newRound = () => {
         player1 = playerFactory("Eric","X");
-        player2 = playerFactory("Kani","O");
+        player2 = playerFactory("Player2","O");
         playerTurn = player1;
 
         _addRestartListener();
@@ -65,39 +78,37 @@ const GameController = (() => {
         //check if the box is already full
         //if the box is empty, add the mark and change the turn
         let b = GameBoard.getBoard();
-        if(b[row][col] === ""){
+        if(b[row][col] === "" && !GameBoard.isFrozen()){
             GameBoard.setBoard(row,col,playerTurn.getMark());
             htmlBoard.innerHTML = "";
             GameBoard.render();
             playerTurn = playerTurn === player1 ? player2 : player1;
         }
 
-        if(checkForWin() !== "no winner"){
+        if(checkForWin() !== "no winner" && !GameBoard.isFrozen()){
             //check which player won
             //display message of congratulations
             if(checkForWin() === player1.getMark()){
                 window.alert(`${player1.getName()} wins!`);
+                GameBoard.freezeBoard();
             } else {
                 window.alert(`${player2.getName()} wins!`);
+                GameBoard.freezeBoard();
             }
+
         } else if (checkForTie()){
             window.alert("The game ends in a tie!");
         }
     }
 
-    const endGame = () => {
-
-    }
-
     const checkForWin = () => {
         let b = GameBoard.getBoard();
-        console.table(b);
         //check for horizontal win
-        if(b[0].every(x => x===b[0]) && b[0][0] !== ""){
+        if(b[0].every(x => x===b[0][0]) && b[0][0] !== ""){
             return b[0][0];
-        } else if(b[1].every(x => x===b[1]) && b[1][0] !== ""){
+        } else if(b[1].every(x => x===b[1][0]) && b[1][0] !== ""){
             return b[1][0];
-        } else if(b[2].every(x => x===b[2]) && b[2][0] !== ""){
+        } else if(b[2].every(x => x===b[2][0]) && b[2][0] !== ""){
             return b[2][0];
         }
 
